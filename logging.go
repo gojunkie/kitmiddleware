@@ -35,7 +35,7 @@ func NewLogging(logger log.Logger, val RequestValuer) endpoint.Middleware {
 					keyvals = append(keyvals, "err", r.Err())
 				}
 
-				logger.Log(val.KeyValues(request, keyvals...))
+				logger.Log(val.KeyValues(request, keyvals...)...)
 			}(time.Now())
 
 			resp, err = next(ctx, request)
