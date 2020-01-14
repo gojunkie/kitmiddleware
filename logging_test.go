@@ -5,23 +5,32 @@ import (
 )
 
 func TestDefaultRequestFormatter(t *testing.T) {
+	type user struct {
+		Name     string
+		Age      int
+		Email    string `val:"email"`
+		Password string `val:"-"`
+	}
+
 	suites := []struct {
 		req  interface{}
 		want []interface{}
 	}{
 		{
-			struct {
-				Name     string
-				Age      int
-				Email    string `val:"email"`
-				Password string `val:"-"`
-			}{
+			user{
 				Name:     "name2",
 				Age:      22,
 				Email:    "test@example.com",
 				Password: "secret",
 			},
 			[]interface{}{"req", `[Name:name2 Age:22 email:test@example.com]`},
+		},
+		{
+			&user{
+				Name:  "name1",
+				Email: "test1@example.com",
+			},
+			[]interface{}{"req", `[Name:name1 Age:0 email:test1@example.com]`},
 		},
 	}
 

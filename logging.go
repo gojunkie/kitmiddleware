@@ -23,7 +23,12 @@ type RequestValuer interface {
 }
 
 // NewLogging create a new endpoint.Middleware instance used to log request.
-func NewLogging(logger log.Logger, val RequestValuer) endpoint.Middleware {
+func NewLogging(logger log.Logger) endpoint.Middleware {
+	return NewLoggingWith(logger, nil)
+}
+
+// NewLogging create a new endpoint.Middleware instance with RequestValuer, used to log request.
+func NewLoggingWith(logger log.Logger, val RequestValuer) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (resp interface{}, err error) {
 			defer func(begin time.Time) {
@@ -35,7 +40,11 @@ func NewLogging(logger log.Logger, val RequestValuer) endpoint.Middleware {
 					keyvals = append(keyvals, "err", r.Err())
 				}
 
-				logger.Log(val.KeyValues(request, keyvals...)...)
+				if val != nil {
+					logger.Log(val.KeyValues(request, keyvals...)...)
+				} else {
+					logger.Log(append(keyvals, "req", request))
+				}
 			}(time.Now())
 
 			resp, err = next(ctx, request)
@@ -66,6 +75,8 @@ func (f *defaultValuer) KeyValues(req interface{}, keyvals ...interface{}) []int
 	var values []string
 
 	switch t.Kind() {
+	case reflect.Ptr:
+		return f.KeyValues(v.Elem().Interface(), keyvals...)
 	case reflect.Struct:
 		for i := 0; i < t.NumField(); i++ {
 			tf := t.Field(i)
