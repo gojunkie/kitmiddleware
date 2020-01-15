@@ -43,7 +43,7 @@ func NewLoggingWith(logger log.Logger, val RequestValuer) endpoint.Middleware {
 				if val != nil {
 					logger.Log(val.KeyValues(request, keyvals...)...)
 				} else {
-					logger.Log(append(keyvals, "req", request))
+					logger.Log(append(keyvals, "req", request)...)
 				}
 			}(time.Now())
 
